@@ -1,14 +1,10 @@
 package com.pm.corecrm.mapper;
 
+import com.pm.corecrm.domain.entity.Building;
 import com.pm.corecrm.domain.dto.building.BuildingDto;
 import com.pm.corecrm.domain.dto.building.CreateBuildingRequest;
 import com.pm.corecrm.domain.dto.building.UpdateBuildingRequest;
-import com.pm.corecrm.domain.entity.Building;
-import org.mapstruct.BeanMapping;
-import org.mapstruct.Mapper;
-import org.mapstruct.MappingTarget;
-import org.mapstruct.NullValuePropertyMappingStrategy;
-import org.springframework.context.annotation.Bean;
+import org.mapstruct.*;
 
 @Mapper(componentModel = "spring")
 public interface BuildingMapper {

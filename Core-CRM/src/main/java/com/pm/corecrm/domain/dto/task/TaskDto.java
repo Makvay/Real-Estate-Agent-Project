@@ -1,4 +1,4 @@
-package com.pm.corecrm.dto;
+package com.pm.corecrm.domain.dto.task;
 
 import com.pm.corecrm.domain.entity.Task;
 import lombok.AllArgsConstructor;
