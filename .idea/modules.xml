@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/Core-CRM/Core-CRM.iml" filepath="$PROJECT_DIR$/Core-CRM/Core-CRM.iml" />
       <module fileurl="file://$PROJECT_DIR$/Real-Estate-Agent.iml" filepath="$PROJECT_DIR$/Real-Estate-Agent.iml" />
     </modules>
   </component>
