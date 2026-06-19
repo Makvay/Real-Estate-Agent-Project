@@ -22,9 +22,7 @@ public class Building {
     private String ownerEmail;
     private Double squareBuilding;
     private String description;
-
-
-
+    
     @Enumerated(EnumType.STRING)
     private BuildingStatus status;
 

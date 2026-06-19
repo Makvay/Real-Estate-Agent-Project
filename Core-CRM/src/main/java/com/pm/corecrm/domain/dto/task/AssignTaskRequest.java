@@ -1,4 +1,4 @@
-package com.pm.corecrm.dto;
+package com.pm.corecrm.domain.dto.task;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
