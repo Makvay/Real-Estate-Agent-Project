@@ -1,6 +1,7 @@
 package com.pm.corecrm.service;
 
 import com.pm.corecrm.domain.dto.user.CreateUserRequest;
+import com.pm.corecrm.domain.dto.user.UpdateUserRequest;
 import com.pm.corecrm.domain.dto.user.UserDto;
 import com.pm.corecrm.domain.entity.User;
 
@@ -19,6 +20,8 @@ public interface UserService {
     boolean existsByEmail(String email);
 
     void deleteUser(Long id);
+
+    UserDto updateUser(Long id, UpdateUserRequest request);
 
 
 
