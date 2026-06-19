@@ -36,5 +36,5 @@ public class CreateBuildingRequest {
 
     private Building.BuildingStatus status;
 
-    private Long responsibleManagerId; // ID менеджера
+    private Long responsibleManagerId;
 }

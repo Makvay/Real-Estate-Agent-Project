@@ -1,6 +1,6 @@
 package com.pm.corecrm.domain.entity;
 
-
+import com.pm.corecrm.domain.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,9 +22,14 @@ public class Building {
     private String ownerEmail;
     private Double squareBuilding;
     private String description;
-    
+
     @Enumerated(EnumType.STRING)
     private BuildingStatus status;
+
+    @ManyToOne
+    @JoinColumn(name = "responsible_manager_id")
+    private User responsibleManager;
+
 
     public enum BuildingStatus   {
         SOLD, NOT_ASSIGNED , ASSIGNED

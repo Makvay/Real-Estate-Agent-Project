@@ -24,4 +24,6 @@ public class BuildingDto {
     private String description;
     private Building.BuildingStatus status;
     private Long responsibleManagerId; // ID менеджера
+
+
 }
