@@ -13,6 +13,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import javax.swing.plaf.ButtonUI;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -61,21 +62,47 @@ public class BuildingServiceImpl implements BuildingService {
 
     @Override
     public BuildingDto updateBuilding(BigDecimal id, UpdateBuildingRequest request) {
-        return null;
+        Building building = buildingRepository.findById(id)
+                .orElseThrow(()-> new RuntimeException("Building not found with id" + id));
+
+        buildingMapper.updateEntity(request, building);
+        if (request.getResponsibleManagerId()  != null) {
+            User manager = userRepository.findById(request.getResponsibleManagerId())
+                    .orElseThrow(()-> new RuntimeException("Manager not found with id" + request.getResponsibleManagerId()));
+            building.setResponsibleManager(manager);
+        }
+        Building updated = buildingRepository.save(building);
+        return buildingMapper.toDto(updated);
+
     }
 
     @Override
     public void deleteBuilding(BigDecimal id) {
+        if (buildingRepository.existsById(id)) {
+            throw new RuntimeException("Building not found with id" + id);
+        }
+        buildingRepository.deleteById(id);
 
     }
 
     @Override
     public BuildingDto assignManager(BigDecimal id, Long managerId) {
-        return null;
+        Building building = buildingRepository.findById(id)
+                .orElseThrow(()-> new RuntimeException("Building not found with id" + id));
+
+        User manager = userRepository.findById(managerId)
+                .orElseThrow(()-> new RuntimeException("User not found with id:" + managerId));
+        building.setResponsibleManager(manager);
+        building.setStatus(Building.BuildingStatus.ASSIGNED);
+
+        Building updated = buildingRepository.save(building);
+        return buildingMapper.toDto(updated);
     }
 
     @Override
     public List<BuildingDto> getBuildingsByStatus(Building.BuildingStatus status) {
-        return List.of();
+        return buildingRepository.findByStatus(status).stream()
+                .map(buildingMapper::toDto)
+                .collect(Collectors.toList());
     }
 }
