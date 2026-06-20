@@ -1,0 +1,127 @@
+1. Gateway Service (порт 8080) - Маршрутизация:
+Gateway → Core CRM Service:    /api/users/      → http://localhost:8081
+Gateway → Core CRM Service:    /api/buildings/  → http://localhost:8081
+Gateway → Core CRM Service:    /api/tasks/      → http://localhost:8081
+Gateway → Content Loader:      /api/loader/     → http://localhost:8082
+Gateway → Content Processor:   /api/processor/  → http://localhost:8083
+Gateway → Price History:       /api/prices/     → http://localhost:8084
+Gateway → Notification Service:/api/notifications/ → http://localhost:8085
+
+//////////////////////////////////////////////////////
+
+2. Core CRM Service (порт 8081) - Основная CRM:
+
+Принимает:
+POST   /api/users           - создать пользователя
+GET    /api/users/{id}      - получить пользователя
+GET    /api/users/email     - получить по email
+GET    /api/users           - список пользователей
+PUT    /api/users/{id}      - обновить пользователя
+DELETE /api/users/{id}      - удалить пользователя
+
+POST   /api/buildings       - создать здание
+GET    /api/buildings/{id}  - получить здание
+GET    /api/buildings/cadastral - получить по кадастру
+GET    /api/buildings       - список зданий
+GET    /api/buildings/status - по статусу
+PUT    /api/buildings/{id}  - обновить здание
+DELETE /api/buildings/{id}  - удалить здание
+PATCH  /api/buildings/{id}/assign-manager - назначить менеджера
+
+POST   /api/tasks           - создать задачу
+GET    /api/tasks/{id}      - получить задачу
+GET    /api/tasks           - список задач
+GET    /api/tasks/assignee/{userId} - по исполнителю
+GET    /api/tasks/status    - по статусу
+GET    /api/tasks/building/{buildingId} - по зданию
+PUT    /api/tasks/{id}      - обновить задачу
+PATCH  /api/tasks/{id}/assign - назначить исполнителя
+PATCH  /api/tasks/{id}/status - обновить статус
+DELETE /api/tasks/{id}      - удалить задачу
+
+Отправляет события в Kafka:
+user.created - пользователь создан
+building.created - здание создано
+building.updated - здание обновлено
+task.created - задача создана
+task.assigned - задача назначена
+task.completed - задача выполнена
+
+//////////////////////////////////////////////////////
+
+3. Content Loader Adapter (порт 8082) - Загрузка данных:
+
+Принимает:
+POST   /api/loader/upload   - загрузить XLSX файл
+GET    /api/loader/status/{id} - статус загрузки
+
+Читает XLSX файлы (Циан, Росреестр, Домклик)
+
+Отправляет события в Kafka (батчами):
+building.data.loaded - данные о зданиях загружены
+building.data.batch - батч данных о зданиях
+
+//////////////////////////////////////////////////////
+
+4. Content Processor (порт 8083) - Обработка данных:
+
+Слушает Kafka:
+building.data.loaded → обрабатывает данные
+building.data.batch → обрабатывает батчи
+
+Обновляет Estate (недвижимость) батчами в БД
+
+Отправляет события в Kafka:
+estate.updated - данные обновлены
+estate.batch.updated - батч обновлен
+
+//////////////////////////////////////////////////////
+
+5. Price History Service (порт 8084) - История цен:
+
+Слушает Kafka:
+building.data.loaded → сохраняет историю цен
+building.data.batch → сохраняет батч истории
+
+Принимает:
+GET /api/prices/{cadastralNumber} - история цен по кадастру
+GET /api/prices/{cadastralNumber}/source - по источнику
+
+Хранит исторические данные с композитными индексами
+
+//////////////////////////////////////////////////////
+
+6. Notification Service (порт 8085) - Уведомления:
+
+Слушает ВСЕ события Kafka и отправляет уведомления:
+
+user.created → Email: "Добро пожаловать в CRM!"
+task.assigned → Email: "Вам назначена задача"
+task.completed → SMS: "Задача выполнена"
+building.updated → Email: "Данные обновлены"
+
+Отправляет запросы в SMS/Email сервисы с retry-механизмом (n-попыток)
+
+//////////////////////////////////////////////////////
+
+7. База данных (PostgreSQL):
+Таблицы:
+- users
+- buildings
+- tasks
+- estate (недвижимость)
+- price_history (история цен)
+
+//////////////////////////////////////////////////////
+
+8. Kafka Топики:
+- user.created
+- building.created
+- building.updated
+- task.created
+- task.assigned
+- task.completed
+- building.data.loaded
+- building.data.batch
+- estate.updated
+- estate.batch.updated
