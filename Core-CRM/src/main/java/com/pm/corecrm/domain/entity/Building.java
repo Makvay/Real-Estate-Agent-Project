@@ -6,8 +6,10 @@ import lombok.*;
 
 import java.math.BigDecimal;
 
-
-@Data
+@RequiredArgsConstructor
+@Getter
+@Setter
+@ToString
 @NoArgsConstructor
 @Entity
 @Table(name = "buildings")
