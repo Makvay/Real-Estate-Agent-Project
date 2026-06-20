@@ -6,7 +6,6 @@ import lombok.*;
 
 import java.math.BigDecimal;
 
-@RequiredArgsConstructor
 @Getter
 @Setter
 @ToString

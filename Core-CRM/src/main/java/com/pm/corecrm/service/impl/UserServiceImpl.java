@@ -9,6 +9,8 @@ import com.pm.corecrm.repository.UserRepository;
 import com.pm.corecrm.service.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -74,5 +76,11 @@ public class UserServiceImpl implements UserService {
         userMapper.updateEntity(request, user);
         User updated = userRepository.save(user);
         return userMapper.toDto(updated);
+    }
+
+    @Override
+    public Page<UserDto> getAllUsers(Pageable pageable) {
+        return userRepository.findAll(pageable)
+                .map(userMapper::toDto);
     }
 }
