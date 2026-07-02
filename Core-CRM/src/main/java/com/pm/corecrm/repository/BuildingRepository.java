@@ -2,6 +2,7 @@ package com.pm.corecrm.repository;
 
 import com.pm.corecrm.domain.entity.Building;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.pm.corecrm.domain.entity.Building.BuildingStatus;
@@ -24,5 +25,8 @@ public interface BuildingRepository extends JpaRepository<Building, BigDecimal> 
     Page<Building> findByPriceBetween(Long minPrice, Long maxPrice, Pageable pageable);
 
     Page<Building> findByStatusAndPriceBetween(BuildingStatus status, Long minPrice, Long maxPrice, Pageable pageable);
+
+    @Query(value = "select id from building", nativeQuery = true)
+    List<Long> findAllIds();
 
 }

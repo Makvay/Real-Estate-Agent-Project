@@ -8,15 +8,18 @@ import com.pm.corecrm.domain.entity.Building;
 import com.pm.corecrm.domain.entity.Task;
 import com.pm.corecrm.domain.entity.User;
 
+import com.pm.corecrm.exeption.BusinessExeption;
 import com.pm.corecrm.mapper.TaskMapper;
 import com.pm.corecrm.repository.BuildingRepository;
 import com.pm.corecrm.repository.TaskRepository;
 import com.pm.corecrm.repository.UserRepository;
 import com.pm.corecrm.service.TaskService;
+import com.pm.corecrm.service.kafka.KafkaEventPublisher;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -35,6 +38,7 @@ public class TaskServiceImpl implements TaskService {
     private final UserRepository userRepository;
     private final BuildingRepository buildingRepository;
     private final TaskMapper taskMapper;
+    private final KafkaEventPublisher kafkaEventPublisher;
 
     @Override
     public TaskDto createTask(CreateTaskRequest request) {
@@ -57,7 +61,9 @@ public class TaskServiceImpl implements TaskService {
         }
 
         Task saved = taskRepository.save(task);
-        return taskMapper.toDto(saved);
+        TaskDto dto = taskMapper.toDto(saved);
+        kafkaEventPublisher.publish("task.created", dto);
+        return dto;
     }
 
     @Override
@@ -108,7 +114,7 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public List<TaskDto> getTasksByBuilding(Long buildingId) {
-        return taskRepository.findByBuildingId(BigDecimal.valueOf(buildingId)).stream()
+        return taskRepository.findByBuildingId(Long.valueOf(buildingId)).stream()
                 .map(taskMapper::toDto)
                 .collect(Collectors.toList());
     }
@@ -147,7 +153,9 @@ public class TaskServiceImpl implements TaskService {
         task.setStatus(Task.TaskStatus.ASSIGNED);
 
         Task updated = taskRepository.save(task);
-        return taskMapper.toDto(updated);
+        TaskDto dto = taskMapper.toDto(updated);
+        kafkaEventPublisher.publish("task.assigned", dto);
+        return dto;
     }
 
     @Override
@@ -156,7 +164,11 @@ public class TaskServiceImpl implements TaskService {
                 .orElseThrow(() -> new RuntimeException("Task not found with id: " + id));
         task.setStatus(status);
         Task updated = taskRepository.save(task);
-        return taskMapper.toDto(updated);
+        TaskDto dto = taskMapper.toDto(updated);
+        if (status == Task.TaskStatus.FINISHED) {
+            kafkaEventPublisher.publish("task.completed", dto);
+        }
+        return dto;
     }
 
     @Override
@@ -165,5 +177,34 @@ public class TaskServiceImpl implements TaskService {
             throw new RuntimeException("Task not found with id: " + id);
         }
         taskRepository.deleteById(id);
+    }
+
+    @Override
+    public TaskDto createTaskUser(CreateTaskRequest request, Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new BusinessExeption("User not found with id: " + id));
+
+        List<Long> ids = buildingRepository.findAllIds();
+
+        if (ids.isEmpty()) {
+            throw new BusinessExeption("No buildings available for task creation");
+        }
+
+        int randomIndex = (int) (Math.random() * ids.size());
+        Building building = buildingRepository.findById(BigDecimal.valueOf(ids.get(randomIndex)))
+                .orElseThrow(() -> new BusinessExeption("Building not found with id: " + ids.get(randomIndex)));
+
+        Task task = taskMapper.toEntity(request);
+        task.setAssignee(user);
+        task.setBuilding(building);
+
+        if (request.getStatus() == null) {
+            task.setStatus(Task.TaskStatus.NEW);
+        }
+
+        Task saved = taskRepository.save(task);
+        TaskDto dto = taskMapper.toDto(saved);
+        kafkaEventPublisher.publish("task.created", dto);
+        return dto;
     }
 }

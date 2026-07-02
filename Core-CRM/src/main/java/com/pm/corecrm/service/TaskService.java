@@ -33,4 +33,6 @@ public interface TaskService {
     TaskDto updateStatus(Long id, Task.TaskStatus status);
 
     void deleteTask(Long id);
+
+    TaskDto createTaskUser(CreateTaskRequest request, Long id);
 }

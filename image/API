@@ -55,7 +55,7 @@ task.completed - задача выполнена
 POST   /api/loader/upload   - загрузить XLSX файл
 GET    /api/loader/status/{id} - статус загрузки
 
-Читает XLSX файлы (Циан, Росреестр, Домклик)
+Читает XLSX файлы
 
 Отправляет события в Kafka (батчами):
 building.data.loaded - данные о зданиях загружены

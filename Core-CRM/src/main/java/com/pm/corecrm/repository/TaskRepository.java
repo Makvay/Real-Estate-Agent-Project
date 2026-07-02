@@ -5,6 +5,7 @@ import com.pm.corecrm.domain.entity.Task.TaskStatus;
 import com.pm.corecrm.domain.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
@@ -17,5 +18,6 @@ public interface TaskRepository extends JpaRepository<Task,Long>, JpaSpecificati
 
     List<Task> findByStatus(TaskStatus status);
 
-    List<Task> findByBuildingId(BigDecimal buildingId);
+    List<Task> findByBuildingId(Long buildingId);
+
 }

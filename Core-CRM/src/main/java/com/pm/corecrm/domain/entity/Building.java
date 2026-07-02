@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 @Table(name = "buildings")
 public class Building {
     @Id
-    private BigDecimal id;
+    private Long id;
     private String cadastrNumber;
     private Long price;
     private String address;
@@ -30,7 +30,6 @@ public class Building {
     @ManyToOne
     @JoinColumn(name = "responsible_manager_id")
     private User responsibleManager;
-
 
     public enum BuildingStatus   {
         SOLD, NOT_ASSIGNED , ASSIGNED

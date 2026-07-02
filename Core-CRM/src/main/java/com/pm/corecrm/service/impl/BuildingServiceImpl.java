@@ -9,6 +9,7 @@ import com.pm.corecrm.mapper.BuildingMapper;
 import com.pm.corecrm.repository.BuildingRepository;
 import com.pm.corecrm.repository.UserRepository;
 import com.pm.corecrm.service.BuildingService;
+import com.pm.corecrm.service.kafka.KafkaEventPublisher;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -27,9 +28,11 @@ public class BuildingServiceImpl implements BuildingService {
     private final BuildingRepository buildingRepository;
     private final UserRepository userRepository;
     private final BuildingMapper buildingMapper;
+    private final KafkaEventPublisher kafkaEventPublisher;
 
     @Override
     public BuildingDto createBuilding(CreateBuildingRequest request) {
+
         if (buildingRepository.findByCadastrNumber(request.getCadastrNumber()).isPresent()) {
             throw new RuntimeException("Building with cadastral number " + request.getCadastrNumber() + " already exists");
         }
@@ -41,7 +44,9 @@ public class BuildingServiceImpl implements BuildingService {
             building.setResponsibleManager(manager);
         }
         Building saved = buildingRepository.save(building);
-        return buildingMapper.toDto(saved);
+        BuildingDto dto = buildingMapper.toDto(saved);
+        kafkaEventPublisher.publish("building.created", dto);
+        return dto;
     }
 
     @Override
@@ -70,7 +75,11 @@ public class BuildingServiceImpl implements BuildingService {
             building.setResponsibleManager(manager);
         }
         Building updated = buildingRepository.save(building);
-        return buildingMapper.toDto(updated);
+        BuildingDto dto = buildingMapper.toDto(updated);
+        if (request.getStatus() != null) {
+            kafkaEventPublisher.publish("building.status.changed", dto);
+        }
+        return dto;
     }
 
     @Override
@@ -92,7 +101,9 @@ public class BuildingServiceImpl implements BuildingService {
         building.setStatus(Building.BuildingStatus.ASSIGNED);
 
         Building updated = buildingRepository.save(building);
-        return buildingMapper.toDto(updated);
+        BuildingDto dto = buildingMapper.toDto(updated);
+        kafkaEventPublisher.publish("building.assigned", dto);
+        return dto;
     }
 
     @Override
