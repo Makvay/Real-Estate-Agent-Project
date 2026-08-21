@@ -14,11 +14,16 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class FileProcessorService {
 
+
     private final UploadJobRepository uploadJobRepository;
     private final XlsxParserService xlsxParserService;
     private final KafkaProducerService kafkaProducerService;
 
     public UploadJob processFile(MultipartFile file, String source) {
+        if (source != null && source.contains(",")) {
+            source = source.split(",")[0].trim();
+        }
+
         UploadJob job = UploadJob.builder()
                 .filename(file.getOriginalFilename())
                 .status(UploadJob.UploadStatus.PENDING)
@@ -29,10 +34,11 @@ public class FileProcessorService {
             job.setStatus(UploadJob.UploadStatus.PROCESSING);
             uploadJobRepository.save(job);
 
+            String topic = resolveTopic(file.getOriginalFilename());
             List<BuildingRawData> records = xlsxParserService.parse(file, source);
             job.setTotalRows(records.size());
 
-            int processed = kafkaProducerService.sendBatch(records);
+            int processed = kafkaProducerService.sendBatch(records, topic);
             job.setProcessedRows(processed);
 
             job.setStatus(UploadJob.UploadStatus.COMPLETED);
@@ -41,6 +47,14 @@ public class FileProcessorService {
         }
 
         return uploadJobRepository.save(job);
+    }
+
+    private String resolveTopic(String filename) {
+        if (filename == null) return "building.raw.data";
+        String lower = filename.toLowerCase();
+        if (lower.contains("domclick")) return "building.raw.domclick";
+        if (lower.contains("rosreestr")) return "building.raw.rosreestr";
+        return "building.raw.data";
     }
 
     public UploadJob getJob(UUID id) {

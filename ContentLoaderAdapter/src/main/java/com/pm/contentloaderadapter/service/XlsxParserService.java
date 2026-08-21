@@ -11,7 +11,26 @@ import java.util.List;
 @Service
 public class XlsxParserService {
 
+    private static final int DOMCLICK_CADASTR = 16;
+    private static final int DOMCLICK_TYPE = 1;
+    private static final int DOMCLICK_SQUARE = 5;
+    private static final int DOMCLICK_PRICE = 8;
+
+    private static final int ROSREESTR_CADASTR = 1;
+    private static final int ROSREESTR_TYPE = 0;
+    private static final int ROSREESTR_SQUARE = 5;
+    private static final int ROSREESTR_PRICE = 11;
+
+    private static final int GENERIC_CADASTR = 0;
+    private static final int GENERIC_TYPE = 1;
+    private static final int GENERIC_SQUARE = 2;
+    private static final int GENERIC_PRICE = 3;
+
     public List<BuildingRawData> parse(MultipartFile file, String source) {
+        if (source != null && source.contains(",")) {
+            source = source.split(",")[0].trim();
+        }
+
         List<BuildingRawData> records = new ArrayList<>();
 
         try (Workbook workbook = WorkbookFactory.create(file.getInputStream())) {
@@ -28,7 +47,6 @@ public class XlsxParserService {
                 } else {
                     data = parseGeneric(row);
                 }
-
                 if (data != null) {
                     data.setSource(source);
                     records.add(data);
@@ -42,35 +60,35 @@ public class XlsxParserService {
     }
 
     private BuildingRawData parseDomclick(Row row) {
-        if (isEmpty(row.getCell(16))) return null;
+        if (isEmpty(row.getCell(DOMCLICK_CADASTR))) return null;
 
         return BuildingRawData.builder()
-                .cadastrNumber(getString(row.getCell(16)))
-                .type(getString(row.getCell(1)))           // тип объекта
-                .square(parseSquare(getString(row.getCell(5))))   // площадь
-                .price(parsePrice(getString(row.getCell(8))))     // цена
+                .cadastrNumber(getString(row.getCell(DOMCLICK_CADASTR)))
+                .type(getString(row.getCell(DOMCLICK_TYPE)))
+                .square(parseSquare(getString(row.getCell(DOMCLICK_SQUARE))))
+                .price(parsePrice(getString(row.getCell(DOMCLICK_PRICE))))
                 .build();
     }
 
     private BuildingRawData parseRosreestr(Row row) {
-        if (isEmpty(row.getCell(1))) return null;
+        if (isEmpty(row.getCell(ROSREESTR_CADASTR))) return null;
 
         return BuildingRawData.builder()
-                .cadastrNumber(getString(row.getCell(1)))
-                .type(getString(row.getCell(0)))
-                .square(getNumeric(row.getCell(5)))
-                .price((long) getNumeric(row.getCell(11)))
+                .cadastrNumber(getString(row.getCell(ROSREESTR_CADASTR)))
+                .type(getString(row.getCell(ROSREESTR_TYPE)))
+                .square(getNumeric(row.getCell(ROSREESTR_SQUARE)))
+                .price((long) getNumeric(row.getCell(ROSREESTR_PRICE)))
                 .build();
     }
 
     private BuildingRawData parseGeneric(Row row) {
-        if (isEmpty(row.getCell(0))) return null;
+        if (isEmpty(row.getCell(GENERIC_CADASTR))) return null;
 
         return BuildingRawData.builder()
-                .cadastrNumber(getString(row.getCell(0)))
-                .type(getString(row.getCell(1)))
-                .square(getNumeric(row.getCell(2)))
-                .price((long) getNumeric(row.getCell(3)))
+                .cadastrNumber(getString(row.getCell(GENERIC_CADASTR)))
+                .type(getString(row.getCell(GENERIC_TYPE)))
+                .square(getNumeric(row.getCell(GENERIC_SQUARE)))
+                .price((long) getNumeric(row.getCell(GENERIC_PRICE)))
                 .build();
     }
 

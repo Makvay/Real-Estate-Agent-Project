@@ -19,18 +19,13 @@ public class UploadJob {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-
     private String filename;
-
     @Enumerated(EnumType.STRING)
     private UploadStatus status;
-
     private Integer totalRows;
     private Integer processedRows;
-
     @Column(updatable = false)
     private LocalDateTime createdAt;
-
     private LocalDateTime updatedAt;
 
     @PrePersist

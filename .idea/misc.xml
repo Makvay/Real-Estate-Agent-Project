@@ -6,6 +6,7 @@
       <list>
         <option value="$PROJECT_DIR$/Core-CRM/pom.xml" />
         <option value="$PROJECT_DIR$/ContentLoaderAdapter/pom.xml" />
+        <option value="$PROJECT_DIR$/ContentProcessor/pom.xml" />
       </list>
     </option>
   </component>

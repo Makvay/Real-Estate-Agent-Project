@@ -12,6 +12,11 @@
           <package value="com.pm.corecrm" />
         </packages>
       </persistence-unit>
+      <persistence-unit moduleName="ContentProcessor" name="Default">
+        <packages>
+          <package value="com.pm.contentprocessor" />
+        </packages>
+      </persistence-unit>
     </persistence-units>
   </component>
 </project>

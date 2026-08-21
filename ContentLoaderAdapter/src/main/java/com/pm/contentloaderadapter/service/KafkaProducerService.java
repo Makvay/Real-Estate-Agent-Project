@@ -22,18 +22,20 @@ public class KafkaProducerService {
     @Value("${app.kafka.batch-size:50}")
     private int batchSize;
 
-    public int sendBatch(List<BuildingRawData> records) {
+
+    private String rosreestrTopic;
+
+    private String domclickTopic;
+
+
+
+    public int sendBatch(List<BuildingRawData> records, String topic) {
         int sent = 0;
-        for (int i = 0; i < records.size(); i += batchSize) {
-            int end = Math.min(i + batchSize, records.size());
-
-            List<BuildingRawData> batch = records.subList(i, end);
-
-            kafkaTemplate.send(topic, batch);
-
-            sent += batch.size();
+        for (BuildingRawData record : records) {
+            kafkaTemplate.send(topic, record);
+            sent++;
         }
-        log.info("Sent {} records to topic {} in batches of {}", sent, topic, batchSize);
+        log.info("Sent {} records to topic {}", sent, topic);
         return sent;
     }
 }
